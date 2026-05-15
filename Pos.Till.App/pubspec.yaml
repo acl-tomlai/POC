@@ -1,0 +1,64 @@
+name: pos_till_app
+description: Cashier till + customer-display Flutter app for the POC POS system.
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+  flutter: '>=3.22.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management & DI
+  flutter_riverpod: ^2.5.1
+
+  # Routing
+  go_router: ^14.2.0
+
+  # HTTP
+  dio: ^5.5.0
+  dio_smart_retry: ^6.0.0
+
+  # Storage
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.0
+
+  # Crypto for per-PIN JWT encryption (PBKDF2 + AES-GCM)
+  cryptography: ^2.7.0
+
+  # Models / serialization
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # ESC/POS printing
+  esc_pos_utils: ^1.1.0
+
+  # Local cashier-side server + customer-display client
+  shelf: ^1.4.1
+  shelf_web_socket: ^2.0.0
+  web_socket_channel: ^3.0.0
+
+  # Service discovery (mDNS)
+  bonsoir: ^5.1.10
+
+  # Logging
+  logger: ^2.4.0
+
+  # Utility
+  collection: ^1.18.0
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  # Codegen
+  build_runner: ^2.4.11
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true
