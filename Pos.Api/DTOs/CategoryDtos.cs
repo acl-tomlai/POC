@@ -1,0 +1,20 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace Pos.Api.DTOs;
+
+public record CategoryResponse(
+    Guid Id,
+    string Name,
+    int DisplayOrder,
+    bool IsActive,
+    DateTime CreatedAt);
+
+public record CategoryCreateRequest(
+    [Required, MaxLength(200)] string Name,
+    int DisplayOrder,
+    bool IsActive = true);
+
+public record CategoryUpdateRequest(
+    [Required, MaxLength(200)] string Name,
+    int DisplayOrder,
+    bool IsActive);

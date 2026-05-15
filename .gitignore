@@ -1,0 +1,52 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+*.DotSettings.user
+
+# .NET
+*.pdb
+*.swp
+*.swo
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+coverage*
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+**/packages/
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+
+# Rider / ReSharper caches
+_ReSharper*/
+
+# Local secrets
+appsettings.*.Local.json
+*.pfx
+*.key.local
+
+# Claude Code config (local only)
+.claude/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
