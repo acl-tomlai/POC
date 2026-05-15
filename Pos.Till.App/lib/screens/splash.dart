@@ -33,18 +33,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final String? restaurant =
+        ref.watch(deviceStateProvider).credentials?.restaurantName;
+    return Scaffold(
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(Icons.point_of_sale, size: 72),
-            SizedBox(height: 16),
-            Text('POS TILL', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
-            SizedBox(height: 24),
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Checking device…'),
+            const Icon(Icons.point_of_sale, size: 72),
+            const SizedBox(height: 16),
+            Text(
+              restaurant == null || restaurant.isEmpty
+                  ? 'POS TILL'
+                  : restaurant.toUpperCase(),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 24),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            const Text('Checking device…'),
           ],
         ),
       ),

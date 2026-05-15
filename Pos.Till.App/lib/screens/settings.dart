@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../app/router.dart';
 import '../models/printer.dart';
+import '../models/store.dart';
+import '../services/customer_display_server.dart';
 import '../services/printer_service.dart';
 import '../state/device_state.dart';
 import '../state/providers.dart';
@@ -21,10 +24,12 @@ class SettingsScreen extends ConsumerWidget {
       data: (List<Printer> p) => p,
       orElse: () => <Printer>[],
     );
-    final Iterable<Printer> receiptPrinters = printers
-        .where((Printer p) => p.printerType == PrinterType.receipt && p.isActive);
-    final Iterable<Printer> kitchenPrinters = printers
-        .where((Printer p) => p.printerType == PrinterType.kitchen && p.isActive);
+    final Iterable<Printer> receiptPrinters = printers.where(
+      (Printer p) => p.printerType == PrinterType.receipt && p.isActive,
+    );
+    final Iterable<Printer> kitchenPrinters = printers.where(
+      (Printer p) => p.printerType == PrinterType.kitchen && p.isActive,
+    );
 
     Printer? findById(String? id, Iterable<Printer> pool) {
       if (id == null || id.isEmpty) return null;
@@ -50,17 +55,7 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: <Widget>[
-          _Section(
-            title: 'Active store',
-            child: ListTile(
-              title: Text(device.credentials?.storeId.isEmpty ?? true
-                  ? 'Not set'
-                  : device.credentials!.storeId,),
-              subtitle: const Text(
-                'Re-pair tablet from device-setup to change store',
-              ),
-            ),
-          ),
+          const _ActiveStoreSection(),
           _PrinterPickerSection(
             title: 'Receipt printer',
             choices: receiptPrinters.toList(),
@@ -105,26 +100,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          _Section(
-            title: 'Customer display',
-            child: Column(
-              children: <Widget>[
-                ListTile(
-                  title: Text(device.customerDisplayIp == null ||
-                          device.customerDisplayIp!.isEmpty
-                      ? 'Not paired'
-                      : 'Paired: ${device.customerDisplayIp}',),
-                  trailing: const Text('TODO phase 5'),
-                ),
-                _LanguageRadios(
-                  label: 'Display language',
-                  value: device.displayLang,
-                  onChanged: (NameLang v) =>
-                      ref.read(deviceStateProvider.notifier).setLang(display: v),
-                ),
-              ],
-            ),
-          ),
+          const _CustomerDisplaySection(),
           _Section(
             title: 'Tablet identity',
             child: ListTile(
@@ -145,12 +121,17 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _testDrawer(
-      BuildContext context, WidgetRef ref, Printer receipt,) async {
+    BuildContext context,
+    WidgetRef ref,
+    Printer receipt,
+  ) async {
     final ScaffoldMessengerState m = ScaffoldMessenger.of(context);
     final PrintResult res = await ref.read(drawerServiceProvider).kick(receipt);
-    m.showSnackBar(SnackBar(
-      content: Text(res.ok ? 'Drawer kicked' : res.error ?? 'Drawer kick failed'),
-    ),);
+    m.showSnackBar(
+      SnackBar(
+        content: Text(res.ok ? 'Drawer kicked' : res.error ?? 'Drawer kick failed'),
+      ),
+    );
   }
 
   Future<void> _wipeDevice(BuildContext context, WidgetRef ref) async {
@@ -162,8 +143,14 @@ class SettingsScreen extends ConsumerWidget {
           'All cashier credentials and device pairing will be removed. The tablet will need to be paired again.',
         ),
         actions: <Widget>[
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Wipe')),
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Wipe'),
+          ),
         ],
       ),
     );
@@ -172,6 +159,141 @@ class SettingsScreen extends ConsumerWidget {
       ref.read(sessionStateProvider.notifier).signOut();
       ref.invalidate(cashierEntriesProvider);
       if (context.mounted) context.go(TillRoutes.deviceSetup);
+    }
+  }
+}
+
+class _ActiveStoreSection extends ConsumerWidget {
+  const _ActiveStoreSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final String? storeId =
+        ref.watch(deviceStateProvider).credentials?.storeId;
+    final AsyncValue<List<Store>> storesAsync = ref.watch(storesProvider);
+
+    String label = 'Not set';
+    if (storeId != null && storeId.isNotEmpty) {
+      label = storesAsync.maybeWhen(
+        data: (List<Store> stores) {
+          for (final Store s in stores) {
+            if (s.id == storeId) return s.name;
+          }
+          return storeId; // fallback to GUID if we lost the row
+        },
+        orElse: () => 'Loading…',
+      );
+    }
+
+    return _Section(
+      title: 'Active store',
+      child: ListTile(
+        title: Text(label),
+        subtitle: const Text(
+          'Re-pair tablet from device-setup to change store',
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomerDisplaySection extends ConsumerWidget {
+  const _CustomerDisplaySection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final NameLang lang = ref.watch(deviceStateProvider).displayLang;
+    final AsyncValue<int> clientsAsync =
+        ref.watch(displayClientCountProvider);
+    final AsyncValue<String?> ipAsync = ref.watch(localLanIpProvider);
+    final int initialClients =
+        ref.read(customerDisplayServerProvider).clientCount;
+    final int clients = clientsAsync.maybeWhen(
+      data: (int n) => n,
+      orElse: () => initialClients,
+    );
+
+    return _Section(
+      title: 'Customer display',
+      child: Column(
+        children: <Widget>[
+          ListTile(
+            title: Text(
+              clients == 0
+                  ? 'No display devices connected'
+                  : '$clients display device${clients == 1 ? '' : 's'} connected',
+            ),
+            subtitle: ipAsync.maybeWhen(
+              data: (String? ip) => ip == null
+                  ? const Text('Listening on port $kCustomerDisplayPort')
+                  : Text('ws://$ip:$kCustomerDisplayPort/cart'),
+              orElse: () => const Text('Looking up LAN address…'),
+            ),
+            trailing: ipAsync.maybeWhen(
+              data: (String? ip) => ip == null
+                  ? null
+                  : IconButton(
+                      tooltip: 'Copy address',
+                      icon: const Icon(Icons.copy_outlined),
+                      onPressed: () async {
+                        await Clipboard.setData(
+                          ClipboardData(
+                            text: 'ws://$ip:$kCustomerDisplayPort/cart',
+                          ),
+                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Address copied')),
+                          );
+                        }
+                      },
+                    ),
+              orElse: () => null,
+            ),
+          ),
+          ListTile(
+            title: const Text('Discovery'),
+            subtitle: const Text(
+              'Re-advertise this till on the LAN if a display tablet can\'t find it',
+            ),
+            trailing: TextButton(
+              onPressed: () => _readvertise(context, ref),
+              child: const Text('Re-advertise'),
+            ),
+          ),
+          _LanguageRadios(
+            label: 'Display language',
+            value: lang,
+            onChanged: (NameLang v) =>
+                ref.read(deviceStateProvider.notifier).setLang(display: v),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _readvertise(BuildContext context, WidgetRef ref) async {
+    final ScaffoldMessengerState m = ScaffoldMessenger.of(context);
+    final DeviceState device = ref.read(deviceStateProvider);
+    final String? storeId = device.credentials?.storeId;
+    final String? restaurantId = device.credentials?.restaurantId;
+    final String restaurantName = device.credentials?.restaurantName ?? 'Till';
+    if (storeId == null || restaurantId == null) {
+      m.showSnackBar(const SnackBar(content: Text('Pair the tablet first.')));
+      return;
+    }
+    try {
+      await ref.read(pairingServiceProvider).advertise(
+            tenantId: restaurantId,
+            storeId: storeId,
+            deviceName: restaurantName == 'Till'
+                ? 'POS Till'
+                : '$restaurantName · Till',
+            port: kCustomerDisplayPort,
+          );
+      m.showSnackBar(const SnackBar(content: Text('Re-advertised on the LAN')));
+    } catch (e) {
+      m.showSnackBar(SnackBar(content: Text('Advertise failed: $e')));
     }
   }
 }

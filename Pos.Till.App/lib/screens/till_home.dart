@@ -162,6 +162,11 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
   }
 
   Widget _buildProductPane(List<Product> filtered) {
+    final List<Product>? all = ref.read(productsProvider).valueOrNull;
+    final int totalActive =
+        all?.where((Product p) => p.isActive).length ?? 0;
+    final String emptyMessage = _emptyMessageFor(totalActive);
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -176,6 +181,7 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
           Expanded(
             child: ProductGrid(
               products: filtered,
+              emptyMessage: emptyMessage,
               onTap: (Product p) =>
                   ref.read(cartProvider.notifier).addProduct(p),
             ),
@@ -183,6 +189,19 @@ class _TillHomeScreenState extends ConsumerState<TillHomeScreen> {
         ],
       ),
     );
+  }
+
+  String _emptyMessageFor(int totalActive) {
+    if (totalActive == 0) {
+      return 'No products configured yet — add some in the admin web.';
+    }
+    if (_searchQuery.isNotEmpty) {
+      return 'No products match "$_searchQuery".';
+    }
+    if (_selectedCategoryId != null) {
+      return 'No products in this category.';
+    }
+    return 'No products to show.';
   }
 
   Future<void> _sendToKitchen() async {

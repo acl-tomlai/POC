@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../state/cart_state.dart';
-import '../state/providers.dart';
 
 /// Modal bottom sheet that edits one cart line — qty and per-line discount.
 class CartLineEditSheet extends ConsumerStatefulWidget {

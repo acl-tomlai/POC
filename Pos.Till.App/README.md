@@ -14,8 +14,11 @@ The same Dart codebase ships **two flavors** from two `main` entry points:
 **Phase 1 — Scaffold + theming + routing — complete.**
 **Phase 2 — API + auth + device setup + user picker + PIN flow — complete.**
 **Phase 3 — Till home + cart + send-to-kitchen + ESC/POS printing — complete.**
+**Phase 4 — Payment + split tender + mock EFTPOS + complete-sale — complete.**
+**Phase 5 — Customer-display flavor + mDNS pairing + WebSocket cart broadcast — complete.**
+**Phase 6 — Settings polish + empty / error states + widget tests — complete.** Phase 7 (the additive `NameLocalized` + `AltLanguageCode` migration on `Pos.Api`) is the only outstanding plan item.
 
-Real Dio client (JWT injection + 401 handler + transient retry), freezed DTO mirrors of [Pos.Api/DTOs/](../Pos.Api/DTOs/), per-cashier PBKDF2 + AES-GCM JWT encryption via [`SecureCredentialsService`](lib/services/secure_credentials.dart), 5-minute idle-logout, working device-pair → user-picker → PIN-unlock → till-home flow with live product grid + category rail + cart + line-edit sheet. Send-to-kitchen does `POST /api/orders` → `PUT status=Sent` → fans the kitchen ticket out to every active kitchen-type printer for the store over raw TCP ESC/POS. Settings owns the printer pickers, drawer-kick test, and per-surface language toggles (`receipt` / `kitchen` / `display` × `en` / `vi` / `both`). Payment screen is still a Phase 4 stub.
+Real Dio client (JWT injection + 401 handler + transient retry), freezed DTO mirrors of [Pos.Api/DTOs/](../Pos.Api/DTOs/), per-cashier PBKDF2 + AES-GCM JWT encryption via [`SecureCredentialsService`](lib/services/secure_credentials.dart), 5-minute idle-logout, working device-pair → user-picker → PIN-unlock → till-home flow with live product grid + category rail + cart + line-edit sheet. Send-to-kitchen does `POST /api/orders` → `PUT status=Sent` → fans the kitchen ticket out to every active kitchen-type printer for the store over raw TCP ESC/POS. Pay opens the split-tender payment screen — same code path handles one-row or multi-row tender, `Complete sale` unlocks at `Remaining ≤ 0`, then it posts every row to `/api/orders/{id}/payments`, sets status `Paid`, prints the receipt, and kicks the drawer if any tender was Cash. Settings owns the printer pickers, drawer-kick test, and per-surface language toggles (`receipt` / `kitchen` / `display` × `en` / `vi` / `both`).
 
 ## Prerequisites
 

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../state/cart_state.dart';
-import '../state/providers.dart';
 import 'cart_line_edit_sheet.dart';
 
 /// Right-hand pane on the till: cart line list + totals + Send/Pay actions.

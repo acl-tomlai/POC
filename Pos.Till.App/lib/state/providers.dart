@@ -13,11 +13,15 @@ import '../api/users_api.dart';
 import '../models/category.dart';
 import '../models/printer.dart';
 import '../models/product.dart';
+import '../models/store.dart';
+import '../services/customer_display_client.dart';
+import '../services/customer_display_server.dart';
 import '../services/drawer_service.dart';
 import '../services/localization_service.dart';
+import '../services/pairing_service.dart';
 import '../services/printer_service.dart';
 import '../services/secure_credentials.dart';
-import 'cart_state.dart';
+import 'broadcast_state.dart';
 import 'device_state.dart';
 import 'session_state.dart';
 
@@ -39,8 +43,6 @@ final StateNotifierProvider<SessionStateNotifier, SessionState>
   (Ref ref) => SessionStateNotifier(),
 );
 
-final StateNotifierProvider<CartNotifier, OrderDraft> cartProvider =
-    StateNotifierProvider<CartNotifier, OrderDraft>((Ref ref) => CartNotifier());
 
 // ---------- API client (auto JWT injection + 401 -> session signOut) ----------
 
@@ -116,3 +118,46 @@ final FutureProvider<List<Printer>> activeStorePrintersProvider =
   if (storeId == null || storeId.isEmpty) return <Printer>[];
   return ref.read(printersApiProvider).listForStore(storeId);
 });
+
+final FutureProvider<List<Store>> storesProvider = FutureProvider<List<Store>>(
+  (Ref ref) async => ref.read(storesApiProvider).list(),
+);
+
+// ---------- customer-display LAN bridge ----------
+
+final Provider<PairingService> pairingServiceProvider =
+    Provider<PairingService>((Ref ref) {
+  final PairingService svc = PairingService();
+  ref.onDispose(svc.dispose);
+  return svc;
+});
+
+final Provider<CustomerDisplayServer> customerDisplayServerProvider =
+    Provider<CustomerDisplayServer>((Ref ref) {
+  final CustomerDisplayServer server = CustomerDisplayServer();
+  ref.onDispose(server.stop);
+  // Auto-push every broadcast change to all connected clients.
+  ref.listen<TillBroadcast>(
+    tillBroadcastProvider,
+    (TillBroadcast? prev, TillBroadcast next) => server.pushBroadcast(next),
+    fireImmediately: true,
+  );
+  return server;
+});
+
+final Provider<CustomerDisplayClient> customerDisplayClientProvider =
+    Provider<CustomerDisplayClient>((Ref ref) {
+  final CustomerDisplayClient client = CustomerDisplayClient();
+  ref.onDispose(client.dispose);
+  return client;
+});
+
+/// Live count of customer-display clients currently subscribed to this till.
+final StreamProvider<int> displayClientCountProvider = StreamProvider<int>(
+  (Ref ref) => ref.watch(customerDisplayServerProvider).clientCountStream,
+);
+
+/// Best-effort LAN IPv4 address — used in Settings so the cashier can read it
+/// out to a display device if mDNS isn't working on this Wi-Fi.
+final FutureProvider<String?> localLanIpProvider =
+    FutureProvider<String?>((Ref ref) => localIpAddress());

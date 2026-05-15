@@ -62,6 +62,11 @@ class OrderDraft {
       );
 }
 
+final StateNotifierProvider<CartNotifier, OrderDraft> cartProvider =
+    StateNotifierProvider<CartNotifier, OrderDraft>(
+  (Ref ref) => CartNotifier(),
+);
+
 class CartNotifier extends StateNotifier<OrderDraft> {
   CartNotifier() : super(const OrderDraft());
 

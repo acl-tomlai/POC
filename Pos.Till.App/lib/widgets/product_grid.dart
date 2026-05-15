@@ -9,15 +9,26 @@ class ProductGrid extends StatelessWidget {
     super.key,
     required this.products,
     required this.onTap,
+    this.emptyMessage = 'No products to show',
   });
 
   final List<Product> products;
   final ValueChanged<Product> onTap;
+  final String emptyMessage;
 
   @override
   Widget build(BuildContext context) {
     if (products.isEmpty) {
-      return const Center(child: Text('No products in this category'));
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            emptyMessage,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+      );
     }
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 4),

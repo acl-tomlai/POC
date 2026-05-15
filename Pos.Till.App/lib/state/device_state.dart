@@ -36,7 +36,6 @@ class DeviceState {
     this.displayLang = NameLang.en,
     this.receiptPrinterId,
     this.kitchenPrinterId,
-    this.customerDisplayIp,
   });
 
   final DeviceCredentials? credentials;
@@ -45,7 +44,6 @@ class DeviceState {
   final NameLang displayLang;
   final String? receiptPrinterId;
   final String? kitchenPrinterId;
-  final String? customerDisplayIp;
 
   bool get isPaired => credentials != null;
 
@@ -57,7 +55,6 @@ class DeviceState {
     NameLang? displayLang,
     String? receiptPrinterId,
     String? kitchenPrinterId,
-    String? customerDisplayIp,
   }) {
     return DeviceState(
       credentials: clearCredentials ? null : (credentials ?? this.credentials),
@@ -66,7 +63,6 @@ class DeviceState {
       displayLang: displayLang ?? this.displayLang,
       receiptPrinterId: receiptPrinterId ?? this.receiptPrinterId,
       kitchenPrinterId: kitchenPrinterId ?? this.kitchenPrinterId,
-      customerDisplayIp: customerDisplayIp ?? this.customerDisplayIp,
     );
   }
 }
@@ -106,9 +102,5 @@ class DeviceStateNotifier extends StateNotifier<DeviceState> {
       receiptPrinterId: receiptId,
       kitchenPrinterId: kitchenId,
     );
-  }
-
-  void setCustomerDisplayIp(String? ip) {
-    state = state.copyWith(customerDisplayIp: ip);
   }
 }
