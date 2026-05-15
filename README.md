@@ -1,10 +1,38 @@
-# Pos.Api
+# POS Multi-Tenant POC
 
-Multi-tenant POS (point-of-sale) backend. ASP.NET Core Web API + EF Core + SQL Server + JWT.
+Two projects under one solution:
+
+| Project | What it is | Run on |
+|---|---|---|
+| [Pos.Api](Pos.Api/) | ASP.NET Core Web API + EF Core + SQL Server + JWT. Multi-tenant POS backend. | `:5202` |
+| [Pos.Admin.Web](Pos.Admin.Web/) | React + Vite + Fluent UI v9 admin console for tenant staff. Wireframes and design in [Pos.Admin.Web/PLAN.md](Pos.Admin.Web/PLAN.md). | `:5173` |
 
 Each tenant is a `Restaurant`. A Restaurant has many `Stores` (physical locations). Catalog (Categories, Products) and Users are scoped per restaurant. Tenant isolation is enforced at the data layer via EF Core global query filters on a `RestaurantId` column carried on every tenant-bound entity.
 
-See [instruction.md](instruction.md) for the full spec.
+See [instruction.md](instruction.md) for the original backend spec.
+
+---
+
+## Running the full stack
+
+Open **two terminals** from the repo root.
+
+```powershell
+# Terminal 1 — API on :5202
+cd Pos.Api
+dotnet run
+
+# Terminal 2 — Admin web on :5173
+cd Pos.Admin.Web
+npm install   # first time only
+npm run dev
+```
+
+Open <http://localhost:5173>. Sign in with the seeded demo admin (`admin@pos.local` / `Admin123!`) or click *Create a restaurant* to sign up a fresh tenant. Detailed admin-web setup is in [Pos.Admin.Web/README.md](Pos.Admin.Web/README.md); API-only setup continues below.
+
+---
+
+# Pos.Api
 
 ---
 
