@@ -73,6 +73,8 @@ export interface UserUpdateRequest {
 export interface CategoryResponse {
   id: string;
   name: string;
+  nameLocalized?: string | null;
+  altLanguageCode?: string | null;
   displayOrder: number;
   isActive: boolean;
   createdAt: string;
@@ -80,6 +82,8 @@ export interface CategoryResponse {
 
 export interface CategoryCreateRequest {
   name: string;
+  nameLocalized?: string | null;
+  altLanguageCode?: string | null;
   displayOrder: number;
   isActive: boolean;
 }
@@ -91,6 +95,8 @@ export interface ProductResponse {
   categoryId: string;
   categoryName: string;
   name: string;
+  nameLocalized?: string | null;
+  altLanguageCode?: string | null;
   description?: string | null;
   sku?: string | null;
   barcode?: string | null;
@@ -104,6 +110,8 @@ export interface ProductResponse {
 export interface ProductCreateRequest {
   categoryId: string;
   name: string;
+  nameLocalized?: string | null;
+  altLanguageCode?: string | null;
   description?: string | null;
   sku?: string | null;
   barcode?: string | null;

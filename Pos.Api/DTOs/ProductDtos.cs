@@ -7,6 +7,8 @@ public record ProductResponse(
     Guid CategoryId,
     string CategoryName,
     string Name,
+    string? NameLocalized,
+    string? AltLanguageCode,
     string? Description,
     string? Sku,
     string? Barcode,
@@ -19,6 +21,8 @@ public record ProductResponse(
 public record ProductCreateRequest(
     [Required] Guid CategoryId,
     [Required, MaxLength(200)] string Name,
+    [MaxLength(200)] string? NameLocalized,
+    [MaxLength(8)] string? AltLanguageCode,
     [MaxLength(2000)] string? Description,
     [MaxLength(100)] string? Sku,
     [MaxLength(100)] string? Barcode,
@@ -30,6 +34,8 @@ public record ProductCreateRequest(
 public record ProductUpdateRequest(
     [Required] Guid CategoryId,
     [Required, MaxLength(200)] string Name,
+    [MaxLength(200)] string? NameLocalized,
+    [MaxLength(8)] string? AltLanguageCode,
     [MaxLength(2000)] string? Description,
     [MaxLength(100)] string? Sku,
     [MaxLength(100)] string? Barcode,

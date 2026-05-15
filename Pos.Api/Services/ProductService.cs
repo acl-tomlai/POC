@@ -64,6 +64,8 @@ public class ProductService : IProductService
             RestaurantId = restaurantId,
             CategoryId = category.Id,
             Name = request.Name.Trim(),
+            NameLocalized = NormalizeLocalizedName(request.NameLocalized),
+            AltLanguageCode = NormalizeLanguageCode(request.AltLanguageCode),
             Description = request.Description,
             Sku = request.Sku,
             Barcode = request.Barcode,
@@ -94,6 +96,8 @@ public class ProductService : IProductService
         }
 
         p.Name = request.Name.Trim();
+        p.NameLocalized = NormalizeLocalizedName(request.NameLocalized);
+        p.AltLanguageCode = NormalizeLanguageCode(request.AltLanguageCode);
         p.Description = request.Description;
         p.Sku = request.Sku;
         p.Barcode = request.Barcode;
@@ -103,6 +107,20 @@ public class ProductService : IProductService
         p.IsActive = request.IsActive;
         await _db.SaveChangesAsync();
         return ToResponse(p);
+    }
+
+    /// <summary>Trims whitespace; treats an empty result as null.</summary>
+    private static string? NormalizeLocalizedName(string? value)
+    {
+        var t = value?.Trim();
+        return string.IsNullOrEmpty(t) ? null : t;
+    }
+
+    /// <summary>Trims + lowercases ISO codes; empty becomes null.</summary>
+    private static string? NormalizeLanguageCode(string? value)
+    {
+        var t = value?.Trim().ToLowerInvariant();
+        return string.IsNullOrEmpty(t) ? null : t;
     }
 
     public async Task DeleteAsync(Guid id)
@@ -123,6 +141,7 @@ public class ProductService : IProductService
     }
 
     private static ProductResponse ToResponse(Product p) =>
-        new(p.Id, p.CategoryId, p.Category?.Name ?? string.Empty, p.Name, p.Description,
+        new(p.Id, p.CategoryId, p.Category?.Name ?? string.Empty, p.Name,
+            p.NameLocalized, p.AltLanguageCode, p.Description,
             p.Sku, p.Barcode, p.Price, p.CostPrice, p.ImageUrl, p.IsActive, p.CreatedAt);
 }

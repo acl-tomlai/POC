@@ -19,6 +19,8 @@ import type {
 const schema = z.object({
   categoryId: z.string().uuid('Pick a category'),
   name: z.string().min(1, 'Required').max(200),
+  nameLocalized: z.string().max(200).optional().or(z.literal('')),
+  altLanguageCode: z.string().max(8).optional().or(z.literal('')),
   description: z.string().max(2000).optional().or(z.literal('')),
   sku: z.string().max(100).optional().or(z.literal('')),
   barcode: z.string().max(100).optional().or(z.literal('')),
@@ -32,6 +34,17 @@ const schema = z.object({
   isActive: z.boolean(),
 });
 type FormValues = z.infer<typeof schema>;
+
+const altLanguageOptions = [
+  { value: '', label: '(none)' },
+  { value: 'vi', label: 'Vietnamese (vi)' },
+  { value: 'zh', label: 'Chinese (zh)' },
+  { value: 'es', label: 'Spanish (es)' },
+  { value: 'fr', label: 'French (fr)' },
+  { value: 'ja', label: 'Japanese (ja)' },
+  { value: 'ko', label: 'Korean (ko)' },
+  { value: 'th', label: 'Thai (th)' },
+];
 
 interface Props {
   open: boolean;
@@ -55,6 +68,8 @@ export function ProductFormDrawer({
     defaultValues: {
       categoryId: '',
       name: '',
+      nameLocalized: '',
+      altLanguageCode: '',
       description: '',
       sku: '',
       barcode: '',
@@ -72,6 +87,8 @@ export function ProductFormDrawer({
           ? {
               categoryId: editing.categoryId,
               name: editing.name,
+              nameLocalized: editing.nameLocalized ?? '',
+              altLanguageCode: editing.altLanguageCode ?? '',
               description: editing.description ?? '',
               sku: editing.sku ?? '',
               barcode: editing.barcode ?? '',
@@ -83,6 +100,8 @@ export function ProductFormDrawer({
           : {
               categoryId: categories[0]?.id ?? '',
               name: '',
+              nameLocalized: '',
+              altLanguageCode: '',
               description: '',
               sku: '',
               barcode: '',
@@ -105,6 +124,8 @@ export function ProductFormDrawer({
         onSubmit({
           categoryId: v.categoryId,
           name: v.name,
+          nameLocalized: v.nameLocalized || null,
+          altLanguageCode: v.altLanguageCode || null,
           description: v.description || null,
           sku: v.sku || null,
           barcode: v.barcode || null,
@@ -123,6 +144,17 @@ export function ProductFormDrawer({
         options={categories.map((c) => ({ value: c.id, label: c.name }))}
       />
       <TextField control={control} name="name" label="Name" required />
+      <TextField
+        control={control}
+        name="nameLocalized"
+        label="Alternative name (e.g. Vietnamese)"
+      />
+      <SelectField
+        control={control}
+        name="altLanguageCode"
+        label="Alternative language"
+        options={altLanguageOptions}
+      />
       <TextAreaField control={control} name="description" label="Description" />
       <TextField control={control} name="sku" label="SKU" />
       <TextField control={control} name="barcode" label="Barcode" />

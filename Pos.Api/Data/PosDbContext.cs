@@ -71,6 +71,8 @@ public class PosDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.Property(x => x.NameLocalized).HasMaxLength(200);
+            e.Property(x => x.AltLanguageCode).HasMaxLength(8);
             e.HasIndex(x => x.RestaurantId);
             e.HasOne(x => x.Restaurant).WithMany(r => r.Categories)
                 .HasForeignKey(x => x.RestaurantId).OnDelete(DeleteBehavior.Restrict);
@@ -82,6 +84,8 @@ public class PosDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.Property(x => x.NameLocalized).HasMaxLength(200);
+            e.Property(x => x.AltLanguageCode).HasMaxLength(8);
             e.Property(x => x.Description).HasMaxLength(2000);
             e.Property(x => x.Sku).HasMaxLength(100);
             e.Property(x => x.Barcode).HasMaxLength(100);
